@@ -1,5 +1,5 @@
 use std::{collections::HashMap, vec};
-
+use rayon::prelude::*;
 
 const INPUT: &str = include_str!("./input.txt");
 fn main() {
@@ -18,7 +18,7 @@ fn process_p2(input: &str) -> usize {
     let (guard_position, guard_direction) = find_guard(&grid).unwrap();
 
     find_path(&grid, &guard_position, &guard_direction)
-        .iter()
+        .par_iter()
         .filter(|l| test_path(&grid, l, &guard_position, &guard_direction))
         .count()
 }
