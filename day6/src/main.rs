@@ -1,5 +1,6 @@
 use std::{collections::HashMap, vec};
 
+
 const INPUT: &str = include_str!("./input.txt");
 fn main() {
     println!("Part 1: {}", process_p1(INPUT));
@@ -8,14 +9,17 @@ fn main() {
 
 fn process_p1(input: &str) -> usize {
     let grid = parse(input);
-    find_path(&grid).len()
+    let (guard_position, guard_direction) = find_guard(&grid).unwrap();
+    find_path(&grid, &guard_position, &guard_direction).len()
 }
 
 fn process_p2(input: &str) -> usize {
-    let grid = parse(input);
-    find_path(&grid)
+    let grid: Vec<Vec<&str>> = parse(input);
+    let (guard_position, guard_direction) = find_guard(&grid).unwrap();
+
+    find_path(&grid, &guard_position, &guard_direction)
         .iter()
-        .filter(|l| test_path(&grid, l))
+        .filter(|l| test_path(&grid, l, &guard_position, &guard_direction))
         .count()
 }
 
@@ -49,8 +53,9 @@ fn find_guard(grid: &Vec<Vec<&str>>) -> Option<((usize, usize), GuardDirection)>
 }
 
 
-fn find_path(grid: &Vec<Vec<&str>>) -> Vec<(usize, usize)> {
-    let (mut guard_position, mut guard_direction) = find_guard(&grid).unwrap();
+fn find_path(grid: &Vec<Vec<&str>>, starting_position: &(usize, usize), starting_direction: &GuardDirection) -> Vec<(usize, usize)> {
+    let mut guard_position = starting_position.clone();
+    let mut guard_direction = starting_direction.clone();
     let mut locations: Vec<(usize, usize)> = vec![];
     loop {
         if on_edge(&grid, &guard_position, &guard_direction) {
@@ -71,12 +76,14 @@ fn find_path(grid: &Vec<Vec<&str>>) -> Vec<(usize, usize)> {
     locations
 }
 
-fn test_path(grid: &Vec<Vec<&str>>, obstacle_location: &(usize, usize)) -> bool {
+fn test_path(grid: &Vec<Vec<&str>>, obstacle_location: &(usize, usize), starting_position: &(usize, usize), starting_direction: &GuardDirection) -> bool {
     let mut test_grid = grid.clone();
-    let (mut guard_position, mut guard_direction) = find_guard(&test_grid).unwrap();
+    let mut guard_position = starting_position.clone();
+    let mut guard_direction = starting_direction.clone();
+
     test_grid[obstacle_location.1][obstacle_location.0] = "#";
     let mut obstacles: Vec<((usize, usize), GuardDirection)> = vec![];
-    loop {
+    loop {    
         if on_edge(&test_grid, &guard_position, &guard_direction) {
             break;
         }
